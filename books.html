@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Books</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  <style>
+    .edit-button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Home</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="member.html">Add Members</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="books.html">Books</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="lend.html">Lend a Book</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+<!-- Add Book Button -->
+<div class="container mt-4">
+  <button type="button" class="btn btn-primary add-button" data-bs-toggle="modal" data-bs-target="#addBookModal">
+    Add Book
+  </button>
+</div>  <!-- Books Table -->
+  <div class="container mt-4">
+    <h2 class="mb-4">Books</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Genre</th>
+          <th>Year</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="booksTableBody">
+        <!-- Book rows will be dynamically added here -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Edit Book Modal -->
+  <div class="modal fade" id="editBookModal" tabindex="-1" aria-labelledby="editBookModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editBookModalLabel">Edit Book</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editBookForm">
+            <!-- Book fields will be dynamically added here -->
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Add Book Modal -->
+  <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addBookModalLabel">Add Book</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addBookForm">
+            <!-- Book fields for creating a new book -->
+            <div class="mb-3">
+              <label for="title" class="form-label">Title</label>
+              <input type="text" class="form-control" id="title" name="title">
+            </div>
+            <div class="mb-3">
+              <label for="author" class="form-label">Author</label>
+              <input type="text" class="form-control" id="author" name="author">
+            </div>
+            <div class="mb-3">
+              <label for="genre" class="form-label">Genre</label>
+              <input type="text" class="form-control" id="genre" name="genre">
+            </div>
+            <div class="mb-3">
+              <label for="year" class="form-label">Year</label>
+              <input type="number" class="form-control" id="year" name="year">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Book</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Custom Script -->
+  <script>
+    $(document).ready(function() {
+      // Fetch books from API and populate the table
+      $.ajax({
+        url: 'http://localhost:8000/books/',
+        type: 'GET',
+        success: function(response) {
+          var books = response.books;
+          var tableBody = $('#booksTableBody');
+
+          books.forEach(function(book) {
+            var bookRow = $('<tr>' +
+              '<td>' + book.id + '</td>' +
+              '<td>' + book.title + '</td>' +
+              '<td>' + book.author + '</td>' +
+              '<td>' + book.genre + '</td>' +
+              '<td>' + book.year + '</td>' +
+              '<td><span class="edit-button" data-book-id="' + book.id + '">&#9998;</span></td>' +
+              '</tr>');
+
+            tableBody.append(bookRow);
+          });
+
+          // Open edit book modal when edit button is clicked
+          $('.edit-button').click(function() {
+            var bookId = $(this).data('book-id');
+            var book = books.find(function(book) {
+              return book.id === bookId;
+            });
+
+            if (book) {
+              // Set book details in the edit form
+              var editBookForm = $('#editBookForm');
+              editBookForm.empty(); // Clear previous form fields
+
+              // Generate form fields dynamically
+              for (var key in book) {
+                var fieldValue = book[key];
+                var formField = $('<div class="mb-3">' +
+                  '<label for="' + key + '" class="form-label">' + key + '</label>' +
+                  '<input type="text" class="form-control" id="' + key + '" name="' + key + '" value="' + fieldValue + '">' +
+                  '</div>');
+
+                editBookForm.append(formField);
+              }
+
+              // Open the modal
+              $('#editBookModal').modal('show');
+            }
+          });
+
+          // Submit the edit form
+          $('#editBookForm').submit(function(e) {
+            e.preventDefault(); // Prevent form submission
+
+            var formValues = $(this).serializeArray();
+            var bookData = {};
+
+            // Construct book data object from form values
+            $.each(formValues, function(index, field) {
+              bookData[field.name] = field.value;
+            });
+
+            // Send PATCH request to update book information
+            $.ajax({
+              url: 'http://localhost:8000/books/' + bookData.id,
+              type: 'PATCH',
+              data: bookData,
+              success: function(response) {
+                // Close the modal
+                $('#editBookModal').modal('hide');
+                // Refresh the page to reflect the changes
+                location.reload();
+              },
+              error: function(xhr, status, error) {
+                // Handle error response
+                console.error(error);
+              }
+            });
+          });
+        },
+        error: function(xhr, status, error) {
+          // Handle error response
+          console.error(error);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

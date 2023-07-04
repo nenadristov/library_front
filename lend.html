@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lend a Book</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  <style>
+    .lend-form {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <!-- Same as before -->
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Home</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="member.html">Add Members</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="books.html">Books</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="lend.html">Lend a Book</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5 lend-form">
+    <h2>Lend a Book</h2>
+    <form id="lendBookForm">
+      <div class="mb-3">
+        <label for="bookId" class="form-label">Book ID</label>
+        <input type="text" class="form-control" id="bookId" name="bookId">
+      </div>
+      <div class="mb-3">
+        <label for="userId" class="form-label">User ID</label>
+        <input type="text" class="form-control" id="userId" name="userId">
+      </div>
+      <button type="submit" class="btn btn-primary">Lend Book</button>
+    </form>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <!-- Same as before -->
+
+  <!-- jQuery -->
+  <!-- Same as before -->
+
+  <!-- Custom Script -->
+  <script>
+    $(document).ready(function() {
+      // Submit the lend book form
+      $('#lendBookForm').submit(function(e) {
+        e.preventDefault(); // Prevent form submission
+
+        var bookId = $('#bookId').val();
+        var userId = $('#userId').val();
+
+        // Send POST request to link the user with the book
+        $.ajax({
+          url: 'http://localhost:8000/lend/',
+          type: 'POST',
+          data: {
+            bookId: bookId,
+            userId: userId
+          },
+          success: function(response) {
+            // Handle success response
+            console.log('Book successfully lent!');
+            // You can redirect to a different page or display a success message here
+          },
+          error: function(xhr, status, error) {
+            // Handle error response
+            console.error(error);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
