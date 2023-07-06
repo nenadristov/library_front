@@ -73,7 +73,7 @@
 
         // Send POST request to link the user with the book
         $.ajax({
-          url: 'http://localhost:8000/return/',
+          url: 'http://localhost:8000/lend/',
           headers:{"Authorization": localStorage.getItem("token")},
           type: 'POST',
           data: {
