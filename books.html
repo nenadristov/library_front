@@ -32,6 +32,9 @@
           <li class="nav-item">
             <a class="nav-link" href="lend.html">Lend a Book</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="return.html">Return a Book</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -88,23 +91,35 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="addBookForm">
+          <form id="addBookForm" method="post">
             <!-- Book fields for creating a new book -->
             <div class="mb-3">
               <label for="title" class="form-label">Title</label>
-              <input type="text" class="form-control" id="title" name="title">
+              <input type="text" class="form-control" id="title" name="naslov">
             </div>
             <div class="mb-3">
               <label for="author" class="form-label">Author</label>
-              <input type="text" class="form-control" id="author" name="author">
+              <input type="text" class="form-control" id="author" name="avtor">
             </div>
             <div class="mb-3">
               <label for="genre" class="form-label">Genre</label>
-              <input type="text" class="form-control" id="genre" name="genre">
+              <input type="text" class="form-control" id="genre" name="zanr">
             </div>
             <div class="mb-3">
               <label for="year" class="form-label">Year</label>
-              <input type="number" class="form-control" id="year" name="year">
+              <input type="number" class="form-control" id="year" name="godina">
+            </div>
+            <div class="mb-3">
+              <label for="year" class="form-label">Quantity</label>
+              <input type="number" class="form-control" id="quantity" name="kolicina">
+            </div>
+            <div class="mb-3">
+              <label for="year" class="form-label">Publisher</label>
+              <input type="text" class="form-control" id="publisher" name="izdavas">
+            </div>
+            <div class="mb-3">
+              <label for="year" class="form-label">Pages</label>
+              <input type="number" class="form-control" id="pages" name="br_strani">
             </div>
             <button type="submit" class="btn btn-primary">Add Book</button>
           </form>
@@ -123,88 +138,84 @@
       // Fetch books from API and populate the table
       $.ajax({
         url: 'http://localhost:8000/books/',
+        headers: {"Authorization": localStorage.getItem("token")},
         type: 'GET',
         success: function(response) {
-          var books = response.books;
+          var books = response;
           var tableBody = $('#booksTableBody');
 
           books.forEach(function(book) {
             var bookRow = $('<tr>' +
               '<td>' + book.id + '</td>' +
-              '<td>' + book.title + '</td>' +
-              '<td>' + book.author + '</td>' +
-              '<td>' + book.genre + '</td>' +
-              '<td>' + book.year + '</td>' +
-              '<td><span class="edit-button" data-book-id="' + book.id + '">&#9998;</span></td>' +
+              '<td>' + book.naslov + '</td>' +
+              '<td>' + book.avtor + '</td>' +
+              '<td>' + book.zanr + '</td>' +
+              '<td>' + book.godina + '</td>' +
+              '<td><span class="edit-button" onclick=deleteBook('+book.id+') data-book-id="' + book.id + '">&#128465;</span></td>' +
               '</tr>');
 
             tableBody.append(bookRow);
           });
+        }});
 
-          // Open edit book modal when edit button is clicked
-          $('.edit-button').click(function() {
-            var bookId = $(this).data('book-id');
-            var book = books.find(function(book) {
-              return book.id === bookId;
-            });
+          
+    
+          $('#addBookForm').submit(function(event) {
+      event.preventDefault(); // Prevent the form from submitting normally
 
-            if (book) {
-              // Set book details in the edit form
-              var editBookForm = $('#editBookForm');
-              editBookForm.empty(); // Clear previous form fields
+        // Get the form data
+        var formData = {
+          naslov: $('#title').val(),
+          avtor: $('#author').val(),
+          zanr: $('#genre').val(),
+          godina: parseInt($('#year').val(), 10), // Convert to integer
+          kolicina: parseInt($('#quantity').val(), 10), // Convert to integer
+          izdavac: $('#publisher').val(),
+          br_strani: parseInt($('#pages').val(), 10) // Convert to integer
+        };
 
-              // Generate form fields dynamically
-              for (var key in book) {
-                var fieldValue = book[key];
-                var formField = $('<div class="mb-3">' +
-                  '<label for="' + key + '" class="form-label">' + key + '</label>' +
-                  '<input type="text" class="form-control" id="' + key + '" name="' + key + '" value="' + fieldValue + '">' +
-                  '</div>');
-
-                editBookForm.append(formField);
-              }
-
-              // Open the modal
-              $('#editBookModal').modal('show');
+        // Send the POST request
+        $.ajax({
+          type: 'POST',
+          url: 'http://localhost:8000/books/',
+            headers: {"Authorization": localStorage.getItem("token")},
+          data: formData,
+          success: function(response) {
+            // Handle the success response
+            console.log(response);
+            $('#addBookModal').modal('hide');
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            // Handle the error response
+            console.error(textStatus, errorThrown);
             }
-          });
-
-          // Submit the edit form
-          $('#editBookForm').submit(function(e) {
-            e.preventDefault(); // Prevent form submission
-
-            var formValues = $(this).serializeArray();
-            var bookData = {};
-
-            // Construct book data object from form values
-            $.each(formValues, function(index, field) {
-              bookData[field.name] = field.value;
-            });
-
-            // Send PATCH request to update book information
-            $.ajax({
-              url: 'http://localhost:8000/books/' + bookData.id,
-              type: 'PATCH',
-              data: bookData,
-              success: function(response) {
-                // Close the modal
-                $('#editBookModal').modal('hide');
-                // Refresh the page to reflect the changes
-                location.reload();
-              },
-              error: function(xhr, status, error) {
-                // Handle error response
-                console.error(error);
-              }
-            });
-          });
-        },
-        error: function(xhr, status, error) {
-          // Handle error response
-          console.error(error);
-        }
-      });
-    });
+        });
+        });
+      
+        
+          
+          
+      })
+      
+    function deleteBook(id){
+      console.log(typeof(id))
+      console.log(parseInt(id,10))
+      $.ajax({
+          type: 'DELETE',
+          url: 'http://localhost:8000/books/',
+            headers: {"Authorization": localStorage.getItem("token")},
+          data: {"id":id},
+          success: function(response) {
+            // Handle the success response
+            console.log(response);
+           
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            // Handle the error response
+            console.error(textStatus, errorThrown);
+            }
+        });
+    }
   </script>
 </body>
 </html>

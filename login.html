@@ -51,7 +51,7 @@
           data: requestData,
           success: function(response) {
             // Store token in local storage
-            localStorage.setItem('token', response.token);
+            localStorage.setItem('token', "Token "+response.key);
             
             
             // Redirect to another page or perform other actions

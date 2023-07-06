@@ -32,6 +32,9 @@
           <li class="nav-item">
             <a class="nav-link" href="lend.html">Lend a Book</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="return.html">Return a Book</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -80,7 +83,6 @@
         <div class="modal-body">
           <form id="editMemberForm">
             <!-- Member fields will be dynamically added here -->
-            <button type="submit" class="btn btn-primary">Save Changes</button>
           </form>
         </div>
       </div>
@@ -108,7 +110,7 @@
             </div>
             <div class="mb-3">
               <label for="dateOfBirth" class="form-label">Date of Birth</label>
-              <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth">
+              <input type="date" class="form-control" id="dateOfBirth" name="date_of_birth">
             </div>
             <div class="mb-3">
               <label for="email" class="form-label">Email</label>
@@ -116,7 +118,7 @@
             </div>
             <div class="mb-3">
               <label for="phoneNumber" class="form-label">Phone Number</label>
-              <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber">
+              <input type="tel" class="form-control" id="phoneNumber" name="phone_number">
             </div>
             <div class="mb-3">
               <label for="address" class="form-label">Address</label>
@@ -139,9 +141,11 @@
       // Fetch members from API and populate the table
       $.ajax({
         url: 'http://localhost:8000/members/',
+        headers:{"Authorization": localStorage.getItem("token")},
+
         type: 'GET',
         success: function(response) {
-          var members = response.members;
+          var members = response;
           var tableBody = $('#membersTableBody');
 
           members.forEach(function(member) {
@@ -158,77 +162,15 @@
               '<td>' + member.joined + '</td>' +
               '<td>' + member.lendOn + '</td>' +
               '<td>' + (member.hasPaid ? '<span class="text-success">&#10004;</span>' : '<span class="text-danger">&#10008;</span>') + '</td>' +
-              '<td><span class="edit-button" data-member-id="' + member.id + '">&#9998;</span></td>' +
+              '<td><span  onclick = payMembership('+member.id+') data-member-id="' + member.id + '">&euro;</span></td>' +
               '</tr>');
 
             tableBody.append(memberRow);
           });
 
           // Open edit member modal when edit button is clicked
-          $('.edit-button').click(function() {
-            var memberId = $(this).data('member-id');
-            var member = members.find(function(member) {
-              return member.id === memberId;
-            });
-
-            if (member) {
-              // Set member details in the edit form
-              var editMemberForm = $('#editMemberForm');
-              editMemberForm.empty(); // Clear previous form fields
-
-              // Generate form fields dynamically
-              for (var key in member) {
-                if (key !== 'hasLend') {
-                  var fieldValue = member[key];
-                  var formField = $('<div class="mb-3">' +
-                    '<label for="' + key + '" class="form-label">' + key + '</label>' +
-                    '<input type="text" class="form-control" id="' + key + '" name="' + key + '" value="' + fieldValue + '">' +
-                    '</div>');
-
-                  editMemberForm.append(formField);
-                }
-              }
-
-              // Open the modal
-              $('#editMemberModal').modal('show');
-            }
-          });
-
-          // Submit the edit form
-          $('#editMemberForm').submit(function(e) {
-            e.preventDefault(); // Prevent form submission
-
-            var formValues = $(this).serializeArray();
-            var memberData = {};
-
-            // Construct member data object from form values
-            $.each(formValues, function(index, field) {
-              memberData[field.name] = field.value;
-            });
-
-            // Send PATCH request to update member information
-            $.ajax({
-              url: 'http://localhost:8000/members/' + memberData.id,
-              type: 'PATCH',
-              data: memberData,
-              success: function(response) {
-                // Close the modal
-                $('#editMemberModal').modal('hide');
-                // Refresh the page to reflect the changes
-                location.reload();
-              },
-              error: function(xhr, status, error) {
-                // Handle error response
-                console.error(error);
-              }
-            });
-          });
-        },
-        error: function(xhr, status, error) {
-          // Handle error response
-          console.error(error);
-        }
-      });
+        }})
+        
     
 
     $('#addMemberButton').click(function() {
@@ -236,30 +178,59 @@
       });
 
       // Submit the add member form
-      $('#addMemberForm').submit(function(e) {
-        e.preventDefault(); // Prevent form submission
+      $('#addMemberForm').submit(function(event) {
+    event.preventDefault(); // Prevent the form from submitting normally
 
-        var formData = $(this).serialize();
+    // Get the form data
+    var formData = {
+      name: $('#name').val(),
+      surname: $('#surname').val(),
+      date_of_birth: $('#dateOfBirth').val(),
+      email: $('#email').val(),
+      phone_number: $('#phoneNumber').val(),
+      address: $('#address').val()
+    };
 
-        // Send POST request to create a new member
-        $.ajax({
-          url: 'http://localhost:8000/members/',
-          type: 'POST',
-          data: formData,
-          success: function(response) {
-            // Close the modal
-            $('#addMemberModal').modal('hide');
-            // Refresh the page to reflect the changes
-            location.reload();
-          },
-          error: function(xhr, status, error) {
-            // Handle error response
-            console.error(error);
-          }
-        });
-      });
+    // Send the POST request
+    $.ajax({
+      type: 'POST',
+      url: 'http://127.0.0.1:8000/members/',
+      headers:{"Authorization": localStorage.getItem("token")},
+      data: formData,
+      success: function(response) {
+        // Handle the success response
+        console.log(response);
+        $('#addMemberModal').modal('hide');
+
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        // Handle the error response
+        console.error(textStatus, errorThrown);
+      }
+    });
+  });
     });
     
+
+    function payMembership(id){
+      console.log(typeof(id))
+      console.log(parseInt(id,10))
+      $.ajax({
+          type: 'POST',
+          url: 'http://localhost:8000/pay-membetship/',
+            headers: {"Authorization": localStorage.getItem("token")},
+          data: {"id":id},
+          success: function(response) {
+            // Handle the success response
+            console.log(response);
+           
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            // Handle the error response
+            console.error(textStatus, errorThrown);
+            }
+        });
+      }
   </script>
 </body>
 </html>
