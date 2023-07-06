@@ -149,19 +149,19 @@
           var tableBody = $('#membersTableBody');
 
           members.forEach(function(member) {
-            var hasLendIcon = member.hasLend ? '<span class="text-success">&#10004;</span>' : '<span class="text-danger">&#10008;</span>';
+            var hasLendIcon = member.has_lend ? '<span class="text-success">&#10004;</span>' : '<span class="text-danger">&#10008;</span>';
             var memberRow = $('<tr>' +
               '<td>' + member.id + '</td>' +
               '<td>' + member.name + '</td>' +
               '<td>' + member.surname + '</td>' +
-              '<td>' + member.dateOfBirth + '</td>' +
+              '<td>' + member.date_of_birth + '</td>' +
               '<td>' + member.email + '</td>' +
-              '<td>' + member.phoneNumber + '</td>' +
+              '<td>' + member.phone_umber + '</td>' +
               '<td>' + member.address + '</td>' +
               '<td>' + hasLendIcon + '</td>' +
-              '<td>' + member.joined + '</td>' +
-              '<td>' + member.lendOn + '</td>' +
-              '<td>' + (member.hasPaid ? '<span class="text-success">&#10004;</span>' : '<span class="text-danger">&#10008;</span>') + '</td>' +
+              '<td>' + member.joined_on + '</td>' +
+              '<td>' + member.lend_on + '</td>' +
+              '<td>' + (member.has_paid ? '<span class="text-success">&#10004;</span>' : '<span class="text-danger">&#10008;</span>') + '</td>' +
               '<td><span  onclick = payMembership('+member.id+') data-member-id="' + member.id + '">&euro;</span></td>' +
               '</tr>');
 
