@@ -68,8 +68,8 @@
       $('#lendBookForm').submit(function(e) {
         e.preventDefault(); // Prevent form submission
 
-        var bookId = parseInt(('#bookId').val(), 10);
-        var userId = parseInt(('#userId').val(),10);
+        var bookId = parseInt($('#bookId').val(), 10);
+        var userId = parseInt($('#userId').val(),10);
 
         // Send POST request to link the user with the book
         $.ajax({
